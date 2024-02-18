@@ -1,45 +1,30 @@
 using KBCore.Refs;
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static PlayerInputActions;
 
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField, Self] Rigidbody2D rb;
     [SerializeField, Range(0 , 10)] float speed = 5;
-    PlayerInputActions inputActions;
 
-    void Awake() {
-        inputActions = new();
-    }
-
-    void OnEnable() {
-        inputActions.Player.Enable();
-    }
-
-    void OnDisable() {
-        inputActions.Player.Disable();
-        
-    }
     private void Update()
     {
         CheckForLightExposure();
     }
     void FixedUpdate()
     {
-        HandleMovement();
+        if (GetMovementDir() != Vector2.zero) {
+            HandleMovement();
+        }
     }
 
     void HandleMovement() {
-        rb.MovePosition(rb.position + speed * Time.fixedDeltaTime * GetMoveDirection());
+        rb.MovePosition(rb.position + speed * Time.fixedDeltaTime * GetMovementDir());
     }
 
-    Vector2 GetMoveDirection() => inputActions.Player.Move.ReadValue<Vector2>();
-
-    void CheckForLightExposure() {
-        bool isInLight = LightManager.Instance.IsPlayerInLight(transform);
-        if (isInLight) {
-            Debug.Log("Player is in light!");
-        } else {
-            Debug.Log("Player is hidden in shadows.");
-        }
-    }
+    Vector2 GetMovementDir() => InputManager.Instance.GetMovementVectorNormalized();
+    void CheckForLightExposure() => LightManager.Instance.IsPlayerInLight(transform);
 }
